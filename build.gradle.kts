@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
 /*
  * StreamEmber çekirdeği (Paper) → build/libs/streamember-core.jar
  *
@@ -54,7 +57,7 @@ tasks.register("deploy") {
             "Plugins klasörü bilinmiyor. MINECRAFT_SERVER_PLUGINS_PATH ortam değişkenini tanımla ya da -PpluginsDir=… ver.")
         val destination = File(target, "streamember-core.jar")
         destination.parentFile.mkdirs()
-        java.nio.file.Files.copy(source.get().asFile.toPath(), destination.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        Files.copy(source.get().asFile.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING)
         logger.lifecycle("→ $destination")
         logger.lifecycle("  Çekirdek güncellendi: sunucuyu yeniden başlat (modüller çekirdeğe bağlı).")
     }
