@@ -1,0 +1,66 @@
+# main'e push → gradle.properties'teki sürümün release'i yoksa: derle → v<sürüm> etiketi + GitHub Release.
+# Ucuz tutulur: tek Linux runner, önbellek/artifact yok, sürüm artmadıysa saniyeler içinde biter,
+# her çalışma bu reponun eski çalışmalarını (log) siler. Release'ler kalır: oyun repoları son release'e karşı derlenir.
+name: release
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'build.gradle.kts', 'settings.gradle.kts', 'gradle.properties', 'gradle/**', 'CHANGELOG.md', '.github/workflows/**']
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+permissions:
+  contents: write   # etiket + release
+  actions: write    # eski çalışmaları silme
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sürüm
+        id: v
+        run: |
+          v=$(sed -n 's/^version=//p' gradle.properties | tr -d '\r')
+          grep -q "^## $v " CHANGELOG.md || { echo "CHANGELOG.md içinde '## $v' bölümü yok"; exit 1; }
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if gh release view "v$v" >/dev/null 2>&1; then
+            echo "v$v zaten yayında; yeniden yayın için sürümü artır."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@v4
+        if: steps.v.outputs.new == 'true'
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Derle
+        if: steps.v.outputs.new == 'true'
+        run: |
+          chmod +x gradlew
+          ./gradlew jar --no-daemon --console=plain
+          cd build/libs && sha256sum streamember-core.jar > streamember-core.jar.sha256
+
+      - name: Release
+        if: steps.v.outputs.new == 'true'
+        run: |
+          v="${{ steps.v.outputs.version }}"
+          awk -v h="## $v " 'index($0, h) == 1 {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
+          gh release create "v$v" build/libs/streamember-core.jar build/libs/streamember-core.jar.sha256 \
+            --target "$GITHUB_SHA" --latest --title "StreamEmber Core (Paper) $v" --notes-file notes.md
+
+      - name: Eski çalışmaları sil
+        if: always()
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs?per_page=100" -q ".workflow_runs[] | select(.id != $GITHUB_RUN_ID) | .id" \
+            | xargs -r -I{} gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/runs/{}" || true

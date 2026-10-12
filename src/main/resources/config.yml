@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# StreamEmber Core
+#
+# Müşteri (yayıncı) UUID'si sırasıyla şuradan alınır:
+#   1) customer-uuid (aşağıda elle verildiyse)
+#   2) StreamEmber launcher'ın yerel API'si (launcher-url /api/customer) — launcher açık ve giriş yapılmışsa
+#   3) STREAMEMBER_CUSTOMER_UUID ortam değişkeni
+# Oyunun (application) UUID'si her modülün jar'ına gömülüdür; burada ayarlanmaz.
+#
+# Komutlar: /se status | play <modül> | stop | target [oyuncu] | reload | reset | test <aksiyon> [adet] [json]
+# ─────────────────────────────────────────────────────────────────────────────
+
+eventfabric-url: https://eventfabric.streamember.com
+falcon-url: https://falcon.streamember.com
+launcher-url: http://127.0.0.1:47880
+
+# Boş bırakılırsa launcher → ortam değişkeni kullanılır.
+customer-uuid: ""
+
+# Aktif oyunun EventFabric'e (ve launcher'a) ne sıklıkla bildirileceği.
+presence-interval-seconds: 15
+
+# Falcon'daki oyun ayarlarının ne sıklıkla yeniden okunacağı (launcher'da değişen ayarlar böyle gelir).
+settings-refresh-seconds: 60
+
+# Boşta kapanma: sunucuda bu kadar dakika hiç oyuncu yoksa sunucu kendini kapatır.
+# Sayaç sunucu açılınca ve son oyuncu çıkınca başlar; biri bağlanınca durur. 0 = kapalı (geliştirme sunucusu).
+idle-shutdown-minutes: 5
+
+# Gelen her aksiyonu hedef oyuncunun action bar'ında göster.
+announce-actions: true
+
+# Bağlantı ve aksiyon ayrıntılarını konsola yaz.
+debug: false

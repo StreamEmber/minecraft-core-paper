@@ -1,0 +1,15 @@
+# Gradle / build
+.gradle/
+build/
+dist/
+builds/
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local overrides
+local.properties

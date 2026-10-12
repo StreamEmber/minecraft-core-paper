@@ -1,0 +1,17 @@
+name: StreamEmberCore
+version: '${version}'
+main: com.streamember.minecraft.core.StreamEmberCorePlugin
+api-version: '1.21'
+description: StreamEmber core — connects game modules to EventFabric (GCore actions), the launcher and Falcon.
+author: StreamEmber
+website: https://streamember.com
+commands:
+  streamember:
+    description: StreamEmber core commands
+    usage: /<command> <status|play|stop|target|reload|reset|test>
+    aliases: [se]
+    permission: streamember.admin
+permissions:
+  streamember.admin:
+    description: Use /streamember
+    default: op
